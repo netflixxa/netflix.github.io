@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prendre une photo</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        video, canvas {
+            max-width: 90%;
+            margin: 10px auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Bienvenue</h1>
+    <p>Pour continuer, autorisez l'accès à votre caméra :</p>
+    <video id="video" autoplay playsinline></video>
+    <button id="capture">Prendre une photo</button>
+    <canvas id="canvas" style="display: none;"></canvas>
+    <p id="result"></p>
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const captureButton = document.getElementById('capture');
+        const result = document.getElementById('result');
+        const context = canvas.getContext('2d');
+
+        // Demander l'accès à la caméra
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then((stream) => {
+                video.srcObject = stream;
+            })
+            .catch((error) => {
+                result.textContent = "Impossible d'accéder à la caméra. Vérifiez vos paramètres.";
+                console.error("Erreur :", error);
+            });
+
+        // Capturer une image lorsqu'on clique sur le bouton
+        captureButton.addEventListener('click', () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Convertir l'image capturée en base64
+            const imageData = canvas.toDataURL('image/png');
+            result.innerHTML = `<img src="${imageData}" alt="Photo capturée" style="max-width: 90%;">`;
+        });
+    </script>
+</body>
+</html>
